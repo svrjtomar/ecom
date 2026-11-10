@@ -1,8 +1,10 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://ecom-0i2a.onrender.com/",
-  withCredentials: true,
+  baseURL: (
+    import.meta.env.VITE_API_URL ||
+    (import.meta.env.DEV ? "https://ecom-lemon-rho-20.vercel.app/" : "")
+  ).replace(/\/+$/, ""),
 });
 
 axiosInstance.interceptors.request.use((config) => {
