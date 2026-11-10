@@ -59,7 +59,7 @@ REFRESH_SECRET=use-a-different-long-random-secret
 
 Use different, private random values for the JWT secrets. Do not commit `.env` files.
 
-The frontend Axios client currently targets `http://localhost:3000`, while the backend defaults to port `5000`. The `PORT=3000` setting above makes them match. If you choose a different backend port, update `baseURL` in `src/api/axiosInstance.js` as well. `FRONTEND_URL` must match the browser origin used by Vite.
+The frontend Axios client reads its API base URL from `VITE_API_URL`, falling back to `http://localhost:3000`. Copy `.env.example` to `.env.local` for local development and set the URL if your backend uses a different port. Vite embeds this value at build time, so set `VITE_API_URL` in the frontend hosting provider before building/deploying. `FRONTEND_URL` must match the browser origin used by Vite.
 
 ### 2. Install dependencies
 
@@ -149,5 +149,4 @@ Product records include a title, price, description, category, image URL, rating
 
 - The cart is held in frontend memory. It is not persisted between reloads and there is no checkout or payment flow.
 - The admin page is protected by token presence, but there is no role-based authorization. Product write APIs require any valid access token.
-- The admin user list is fetched from the API, but user add/edit/delete actions are currently client-side only. `GET /api/auth/users` is not authenticated.
 - Product images are represented by URLs; an image-upload flow is not connected.
