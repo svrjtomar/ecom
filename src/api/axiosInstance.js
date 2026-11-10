@@ -1,9 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL ||
-    (import.meta.env.DEV ? "http://localhost:3000" : ""),
+  baseURL: "https://ecom-0i2a.onrender.com/",
   withCredentials: true,
 });
 
@@ -21,9 +19,10 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    const isAuthRequest = /\/api\/auth\/(login|register|refresh-token|logout)(\?|$)/.test(
-      originalRequest?.url ?? "",
-    );
+    const isAuthRequest =
+      /\/api\/auth\/(login|register|refresh-token|logout)(\?|$)/.test(
+        originalRequest?.url ?? "",
+      );
 
     if (
       error.response?.status !== 401 ||
@@ -47,7 +46,9 @@ axiosInstance.interceptors.response.use(
           )
           .then(({ data }) => {
             if (!data.accessToken) {
-              throw new Error("Refresh response did not include an access token");
+              throw new Error(
+                "Refresh response did not include an access token",
+              );
             }
             localStorage.setItem("accessToken", data.accessToken);
             return data.accessToken;
@@ -65,7 +66,10 @@ axiosInstance.interceptors.response.use(
       if ([401, 403].includes(refreshError.response?.status)) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
-        if (window.location.pathname !== "/login" && window.location.pathname !== "/register") {
+        if (
+          window.location.pathname !== "/login" &&
+          window.location.pathname !== "/register"
+        ) {
           window.location.assign("/login");
         }
       }

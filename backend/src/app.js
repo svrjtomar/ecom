@@ -14,12 +14,7 @@ connectDB();
 const app = express();
 const frontendDist = fileURLToPath(new URL("../../dist", import.meta.url));
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true,
-  }),
-);
+app.use(cors());
 app.use(express.json());
 app.use(express.static(frontendDist));
 app.use("/api/products", ProductRouter);
