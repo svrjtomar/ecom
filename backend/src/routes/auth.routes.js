@@ -29,25 +29,33 @@ router.get("/users", authenticate, async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({
-      status: false,
-      message: "Email and password required",
-    });
-  }
+    if (!email || !password) {
+      return res.status(400).json({
+        status: false,
+        message: "Email and password required",
+      });
+    }
 
-  const user = await User.findOne({ email });
-  if (!user)
-    return res.status(400).json({
-      status: false,
-      message: "Email is not Registered",
-    });
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        status: false,
+        message: "Email is not registered",
+      });
+    }
 
-  const isValid = await bcrypt.compare(password, user.password);
+    const isValid = await bcrypt.compare(password, user.password);
 
-  if (isValid) {
+    if (!isValid) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid email or password",
+      });
+    }
+
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
 
@@ -68,12 +76,13 @@ router.post("/login", async (req, res) => {
         name: user.name,
       },
     });
+  } catch (error) {
+    console.error("Login failed:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Unable to log in right now. Please try again.",
+    });
   }
-
-  res.status(400).json({
-    status: false,
-    message: "Invalid Password",
-  });
 });
 
 //register api
@@ -119,7 +128,11 @@ router.post("/register", registerValidator, async (req, res) => {
       accessToken,
     });
   } catch (error) {
-    alert(error);
+    console.error("Registration failed:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Unable to create your account right now. Please try again.",
+    });
   }
 });
 

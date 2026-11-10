@@ -1,24 +1,45 @@
 import { NavLink } from "react-router";
-import axionsInstace from '../api/axiosInstance'
+import { useState } from "react";
+import axiosInstance from "../api/axiosInstance";
 import { useNavigate } from "react-router";
 
-const Login = () => {
-  const navigate = useNavigate()
+const Register = () => {
+  const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
 
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData.entries());
+    if (data.password !== data.confirmPassword) {
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
+
+    delete data.confirmPassword;
+    setIsSubmitting(true);
+
     try {
-      const response = await axionsInstace.post("/api/auth/register", data)
-      console.log(response.data)
-      navigate('/login')
-
+      await axiosInstance.post("/api/auth/register", data);
+      navigate("/login");
     } catch (error) {
-          console.error(error.response?.data ?? error.message);
-
+      const validationMessage = error.response?.data?.errors
+        ?.map((item) => item.msg)
+        .filter(Boolean)
+        .join(" ");
+      setErrorMessage(
+        validationMessage ||
+          error.response?.data?.message ||
+          "Unable to create your account. Check your connection and try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
   return (
     <div className="flex justify-center items-center h-screen">
       <div className="bg-white border-slate-100 rounded-lg shadow-sm h-100 w-100 p-8">
@@ -30,31 +51,48 @@ const Login = () => {
               name="name"
               className="w-full border border-slate-100 rounded-sm px-3 py-2"
               placeholder="Enter your Name"
+              autoComplete="name"
+              required
             />
             <input
               type="email"
               name="email"
               className="w-full border border-slate-100 rounded-sm px-3 py-2"
               placeholder="Enter your Email"
+              autoComplete="email"
+              required
             />
             <input
               type="password"
               name="password"
               className="w-full border border-slate-100 rounded-sm px-3 py-2"
               placeholder="Set a Password"
+              autoComplete="new-password"
+              minLength={6}
+              required
             />
             <input
               type="password"
               name="confirmPassword"
               className="w-full border border-slate-100 rounded-sm px-3 py-2"
               placeholder="Enter your Password again"
+              autoComplete="new-password"
+              minLength={6}
+              required
             />
+
+            {errorMessage && (
+              <p role="alert" className="text-sm text-red-600">
+                {errorMessage}
+              </p>
+            )}
 
             <button
               type="submit"
-              className="w-full bg-[#0016DF] text-white rounded-sm p-2 font-semibold cursor-pointer"
+              disabled={isSubmitting}
+              className="w-full bg-[#0016DF] text-white rounded-sm p-2 font-semibold cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Continue
+              {isSubmitting ? "Creating account..." : "Continue"}
             </button>
           </div>
         </form>
@@ -71,4 +109,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;
