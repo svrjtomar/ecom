@@ -59,7 +59,7 @@ REFRESH_SECRET=use-a-different-long-random-secret
 
 Use different, private random values for the JWT secrets. Do not commit `.env` files.
 
-The frontend Axios client reads its API base URL from `VITE_API_URL`, falling back to `http://localhost:3000`. Copy `.env.example` to `.env.local` for local development and set the URL if your backend uses a different port. Vite embeds this value at build time, so set `VITE_API_URL` in the frontend hosting provider before building/deploying. `FRONTEND_URL` must match the browser origin used by Vite.
+The frontend Axios client reads its API base URL from `VITE_API_URL`. In development, it falls back to `http://localhost:3000`; in a production build with no `VITE_API_URL`, it uses same-origin `/api` requests. Copy `.env.example` to `.env.local` for local development. For a combined deployment, do not set `VITE_API_URL` to localhost.
 
 ### 2. Install dependencies
 
@@ -86,6 +86,28 @@ npm run dev
 
 Vite prints the frontend URL when it starts (normally `http://localhost:5173`). The backend connects to MongoDB when it starts.
 
+## Deploy frontend and backend together
+
+The Express app serves the Vite production build from the root `dist/` directory, alongside its `/api` routes. Deploy the repository as one service with the repository root as its working directory:
+
+1. Install frontend and backend dependencies and build the frontend:
+
+   ```bash
+   npm install
+   npm --prefix backend install
+   npm run build
+   ```
+
+2. Start the API and static frontend:
+
+   ```bash
+   npm --prefix backend start
+   ```
+
+3. Configure the host-provided `PORT`, `MONGO_URI`, `JWT_SECRET`, `REFRESH_SECRET`, and `NODE_ENV=production`. Leave `VITE_API_URL` unset (or empty) so the browser sends API calls to the same host. The server serves the frontend and API on that host, so no separate API origin is needed.
+
+If `VITE_API_URL` is set to `http://localhost:3000` in the deployment environment, remove it and rebuild; otherwise visitors' browsers will try to contact their own computers instead of the deployed API.
+
 ## Available scripts
 
 Run frontend scripts from the project root:
@@ -102,6 +124,7 @@ Run the backend from `backend/`:
 | Command | Description |
 | --- | --- |
 | `npm run dev` | Start the API with Nodemon |
+| `npm start` | Start the API in production |
 
 ## Routes
 
