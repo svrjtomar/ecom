@@ -16,12 +16,14 @@ const getRefreshCookieOptions = () => {
   };
 };
 
-router.get("/me",authenticate, async(req, res) => {
-const user = await User.findById(req.user.id).select("-password -refreshToken")
+router.get("/me", authenticate, async (req, res) => {
+  const user = await User.findById(req.user.id).select(
+    "-password -refreshToken",
+  );
   res.json(user);
 });
 
-router.get("/users", async (req, res) => {
+router.get("/users", authenticate, async (req, res) => {
   const users = await User.find();
   res.json(users);
 });
@@ -76,7 +78,7 @@ router.post("/login", async (req, res) => {
 
 //register api
 
-router.post("/register",registerValidator, async (req, res) => {
+router.post("/register", registerValidator, async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
